@@ -13,30 +13,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # 更新到 v4 版本
+      - uses: actions/checkout@v4
 
-      - name: build dist
+      - name: Ensure script permissions
+        run: chmod +x ./dist.sh
+
+      - name: Build dist
         run: |
           ./dist.sh
+          echo "Listing files in the current directory:"
           ls -la
+          echo "Listing files in the dist directory:"
+          ls -la dist
 
-      - name: create release
-        uses: ncipollo/release-action@v1
+      - name: Create release
         if: startsWith(github.ref, 'refs/tags/v')
+        uses: ncipollo/release-action@v1
         with:
-          artifacts: "adguardcert-*.zip"
+          artifacts: "dist/adguardcert-*.zip"  # 确保路径匹配
           token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
           prerelease: ${{ contains(github.ref, '-') }}
 
-      - name: write PR url
+      - name: Write PR URL
         if: github.event_name == 'pull_request'
         run: |
           echo "${{ github.event.pull_request.html_url }}" > pull_request_url.txt
 
-      - name: upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload artifact
         if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v3
         with:
           name: adguardcert module build
           path: |
@@ -44,7 +50,7 @@ jobs:
             README.md
             pull_request_url.txt
 
-      - name: update json
+      - name: Update JSON
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -52,4 +58,5 @@ jobs:
           git fetch origin
           ./update.sh
           git push origin master
+          echo "Listing files in the current directory after update:"
           ls -la
