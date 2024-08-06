@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Running dist.sh..."
 
 UPDATE_BINARY_URL="https://raw.githubusercontent.com/topjohnwu/Magisk/master/scripts/module_installer.sh"
 
@@ -14,3 +15,7 @@ rm -f ${NAME}-${VERSION}.zip
   cd ./module
   zip ../${NAME}-${VERSION}.zip -r * -x ".*" "*/.*"
 )
+
+# 你的构建命令
+echo "Listing files after build:"
+ls -la
